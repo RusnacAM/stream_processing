@@ -1,29 +1,3 @@
-defmodule Reader do
-  use Supervisor
-
-  def start_link do
-    Supervisor.start_link(__MODULE__, [], name: __MODULE__)
-  end
-
-  def init(_) do
-    children = [
-      %{
-        id: :tweets1,
-        start: {SseReader, :start_link, ["http://localhost:4000/tweets/1"]}
-      },
-      %{
-        id: :tweets2,
-        start: {SseReader, :start_link, ["http://localhost:4000/tweets/2"]}
-      },
-    ]
-
-    Supervisor.init(children, strategy: :one_for_one)
-  end
-end
-
-# {:ok, pid} = Reader.start_link
-# {:ok, pid} = Printer.start_link
-
 defmodule SseReader do
   use GenServer
 
@@ -32,7 +6,6 @@ defmodule SseReader do
   end
 
   def init([url: url]) do
-    IO.puts "Connecting to stream..."
     HTTPoison.get!(url, [], [recv_timeout: :infinity, stream_to: self()])
     {:ok, nil}
   end
@@ -52,22 +25,30 @@ defmodule SseReader do
     {:noreply, nil}
   end
 
+  defp read_stream("event: \"message\"\n\ndata: {\"message\": panic}\n\n" <> message) do
+    Mediator.redirect_text("kill")
+  end
+
   defp read_stream("event: \"message\"\n\ndata: " <> message) do
     {success, data} = Jason.decode(String.trim(message))
 
     if success == :ok do
-      tweet = data["message"]["tweet"]
-      text = tweet["text"]
-      hashtag = tweet["entities"]
-      Printer.print_text(text)
-      #IO.puts "Received message: #{inspect hashtag}"
-    else
-      IO.puts "Failed to decode message: #{inspect data}"
+      tweet = data["message"]["tweet"]["text"]
+      hashtags = data["message"]["tweet"]["entities"]["hashtags"]
+      hashtag_list = Enum.map(hashtags, fn hashtag -> Map.get(hashtag, "text") end)
+      redirect_hashtag(hashtag_list)
+      Mediator.redirect_text(tweet)
     end
-
     IO.puts("\n")
+
+  end
+
+  def redirect_hashtag(hashtag_list) do
+    if(hashtag_list != []) do
+      send(HashtagPrinter, {:get_hashtaglist, hashtag_list})
+    end
   end
 end
 
-# {:ok, pid} = Printer.start_link
-# SseReader.start_link("http://localhost:4000/tweets/1")
+# {:ok, pid} = PrinterSupervisor.start_link
+# {:ok, pid} = ReaderSupervisor.start_link
