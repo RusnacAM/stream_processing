@@ -1,11 +1,12 @@
 defmodule Printer do
   use GenServer
+  require Logger
 
   @min_time 5
   @max_time 50
 
   def start_link(worker) do
-    IO.puts(worker)
+    Logger.info("Starting worker: #{worker}")
     GenServer.start_link(__MODULE__, worker)
   end
 
@@ -17,8 +18,8 @@ defmodule Printer do
     GenServer.cast(pid, {:print_text, text})
   end
 
-  def handle_cast({:print_text, "kill"}, state) do
-    IO.puts("Process with id #{state} is being terminated")
+  def handle_cast({:print_text, "kill process"}, state) do
+    Logger.info("Process with id #{state} is being terminated")
     exit(:killed)
   end
 
@@ -28,7 +29,6 @@ defmodule Printer do
     Process.sleep(Enum.random(@min_time..@max_time))
     {:noreply, state}
   end
-
 
   # {:ok, pid} = PrinterSupervisor.start_link
   # {:ok, pid} = ReaderSupervisor.start_link

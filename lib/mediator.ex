@@ -12,32 +12,39 @@ defmodule Mediator do
     {:ok, {total_printers, current_printer}}
   end
 
-  def redirect_text(tweet) do
-    GenServer.cast(__MODULE__, {:redirect_text, tweet})
+  def redirect_text(tweet_data) do
+    GenServer.cast(__MODULE__, {:redirect_text, tweet_data})
   end
 
-  def handle_cast({:redirect_text, tweet}, {total_printers, current_printer}) do
+  def handle_cast({:redirect_text, tweet_data}, {total_printers, current_printer}) do
     curr_printer_num = current_printer + 1
-    printer = :"printer#{curr_printer_num}"
+    tweet_text = tweet_data["text"]
 
-    printer_pid = PrinterSupervisor.get_pid(printer)
-    clean_tweet = tweet
-    |> String.downcase()
-    |> check_tweet()
-    Printer.print_text(printer_pid, clean_tweet)
+    call_redacted(curr_printer_num, tweet_text)
+    call_engagement(curr_printer_num, tweet_data)
+    call_sentiment(curr_printer_num, tweet_text)
     {:noreply, {total_printers, rem(curr_printer_num, total_printers)}}
   end
 
-  def check_tweet(tweet) do
-    jason = File.read!("lib/swear-words.json")
-    swear_words = Jason.decode!(jason)
-    tweet = Regex.replace(~r/(\w+)/, tweet, fn word ->
-      if Enum.member?(swear_words, word) do
-        String.replace(word, ~r/./, "*")
-      else
-        word
-      end
-    end)
+  def call_redacted(curr_printer_num, tweet_text) do
+    redacted_printer = String.to_atom("RedactedText#{curr_printer_num}")
+    redacted_sup_pid = ReaderSupervisor.get_pid(:redactedprinters)
+    redacted_printer_pid = PrinterSupervisor.get_pid(curr_printer_num, redacted_sup_pid)
+    RedactedText.censor_tweet(redacted_printer_pid, tweet_text)
+  end
+
+  def call_engagement(curr_printer_num, tweet_data) do
+    engagement_printer = String.to_atom("EngagementRatio#{curr_printer_num}")
+    engagement_sup_pid = ReaderSupervisor.get_pid(:engagementprinters)
+    engagement_printer_pid = PrinterSupervisor.get_pid(curr_printer_num, engagement_sup_pid)
+    EngagementRatio.get_engagement(engagement_printer_pid, tweet_data)
+  end
+
+  def call_sentiment(curr_printer_num, tweet_text) do
+    sentiment_printer = String.to_atom("SentimentScore#{curr_printer_num}")
+    sentiment_sup_pid = ReaderSupervisor.get_pid(:sentimentprinters)
+    sentiment_printer_pid = PrinterSupervisor.get_pid(curr_printer_num, sentiment_sup_pid)
+    SentimentScore.get_sentiment(sentiment_printer_pid, tweet_text)
   end
 
 end

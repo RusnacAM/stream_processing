@@ -1,7 +1,9 @@
 defmodule SseReader do
   use GenServer
+  require Logger
 
   def start_link(url) do
+    Logger.info("Connecting to stream from #{url}")
     GenServer.start_link(__MODULE__, url: url)
   end
 
@@ -26,18 +28,19 @@ defmodule SseReader do
   end
 
   defp read_stream("event: \"message\"\n\ndata: {\"message\": panic}\n\n" <> message) do
-    Mediator.redirect_text("kill")
+    IO.puts("kill mess")
+    #Mediator.redirect_text("KILL PROCESS")
   end
 
   defp read_stream("event: \"message\"\n\ndata: " <> message) do
     {success, data} = Jason.decode(String.trim(message))
 
     if success == :ok do
-      tweet = data["message"]["tweet"]["text"]
-      hashtags = data["message"]["tweet"]["entities"]["hashtags"]
-      hashtag_list = Enum.map(hashtags, fn hashtag -> Map.get(hashtag, "text") end)
-      redirect_hashtag(hashtag_list)
-      Mediator.redirect_text(tweet)
+      tweet_data = data["message"]["tweet"]
+      Mediator.redirect_text(tweet_data)
+      # hashtags = data["message"]["tweet"]["entities"]["hashtags"]
+      # hashtag_list = Enum.map(hashtags, fn hashtag -> Map.get(hashtag, "text") end)
+      # redirect_hashtag(hashtag_list)
     end
     IO.puts("\n")
 
