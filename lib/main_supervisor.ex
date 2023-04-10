@@ -10,6 +10,7 @@ defmodule ReaderSupervisor do
       Supervisor.child_spec({PrinterSupervisor, {3, RedactedText}}, id: :redactedprinters),
       Supervisor.child_spec({PrinterSupervisor, {3, EngagementRatio}}, id: :engagementprinters),
       Supervisor.child_spec({PrinterSupervisor, {3, SentimentScore}}, id: :sentimentprinters),
+      Supervisor.child_spec({UserEngagement, []}, id: :userengagement),
       # Supervisor.child_spec({HashtagPrinter}, id: :hashtagprinter),
       Supervisor.child_spec({EmotionReader, ["http://localhost:4000/emotion_values"]}, id: :emotionvalues),
       Supervisor.child_spec({Mediator, 3}, id: :loadbalancer),

@@ -13,7 +13,6 @@ defmodule EmotionReader do
   end
 
   def handle_info(%HTTPoison.AsyncChunk{chunk: chunk}, state) do
-    #IO.inspect(chunk)
     new_state = Enum.join([state, chunk], "")
     {:noreply, new_state}
   end
@@ -35,8 +34,8 @@ defmodule EmotionReader do
     stream = String.split(state, "\r\n")
     new_state = Enum.map(stream, fn emotion ->
       String.split(emotion, "\t")
-    end) |>
-    Map.new(fn [sentiment, value] ->
+    end)
+    |> Map.new(fn [sentiment, value] ->
     score = String.to_integer(String.at(value, String.length(value)-1))
     {sentiment, score}
     end)
