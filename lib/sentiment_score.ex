@@ -22,7 +22,7 @@ defmodule SentimentScore do
     |> String.split(" ", trim: True)
     emotion_sum = Enum.map(tweet_text, fn word -> GenServer.call(sentiment_pid, {:get_score, word}) end)
     emotion_score = Enum.sum(emotion_sum) / length(emotion_sum)
-    IO.puts("Sentiment Score: #{inspect(emotion_score)}")
+    #IO.puts("Sentiment Score: #{inspect(emotion_score)}")
     {:noreply, state}
   end
 end

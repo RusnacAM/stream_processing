@@ -14,6 +14,7 @@ defmodule ReaderSupervisor do
       # Supervisor.child_spec({HashtagPrinter}, id: :hashtagprinter),
       Supervisor.child_spec({EmotionReader, ["http://localhost:4000/emotion_values"]}, id: :emotionvalues),
       Supervisor.child_spec({Mediator, 3}, id: :loadbalancer),
+      Supervisor.child_spec({Batcher, {50, 1500}}, id: :batcher),
       Supervisor.child_spec({SseReader, ["http://localhost:4000/tweets/1"]}, id: :tweets1),
       Supervisor.child_spec({SseReader, ["http://localhost:4000/tweets/2"]}, id: :tweets2)
     ]

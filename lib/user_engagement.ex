@@ -19,8 +19,7 @@ defmodule UserEngagement do
     val = Map.get(state[:users], username, 0)
     new_state = Map.put(state[:users], username, val + ratio)
 
-    IO.puts("User Engagement Ratio: #{username}: #{val + ratio} ")
-
+    #IO.puts("User Engagement Ratio: #{username}: #{val + ratio} ")
     {:noreply, %{users: new_state}}
   end
 end

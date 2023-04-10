@@ -37,7 +37,7 @@ defmodule EngagementRatio do
       0
     end
 
-    IO.puts("Engagement Ratio: #{inspect(engagement_ratio)}")
+    #IO.puts("Engagement Ratio: #{inspect(engagement_ratio)}")
     UserEngagement.get_user_engagement(username, engagement_ratio)
     {:noreply, state}
   end

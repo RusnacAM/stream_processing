@@ -28,7 +28,6 @@ defmodule SseReader do
   end
 
   defp read_stream("event: \"message\"\n\ndata: {\"message\": panic}\n\n" <> message) do
-    IO.puts("kill mess")
     #Mediator.redirect_text("KILL PROCESS")
   end
 
@@ -42,7 +41,7 @@ defmodule SseReader do
       # hashtag_list = Enum.map(hashtags, fn hashtag -> Map.get(hashtag, "text") end)
       # redirect_hashtag(hashtag_list)
     end
-    IO.puts("\n")
+    #IO.puts("\n")
 
   end
 

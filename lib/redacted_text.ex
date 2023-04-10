@@ -25,7 +25,8 @@ defmodule RedactedText do
         word
       end
     end)
-    IO.puts("Redacted text: #{inspect(tweet_text)}")
+    Batcher.get_batch(tweet_text)
+    #IO.puts("Redacted text: #{inspect(tweet_text)}")
     {:noreply, state}
   end
 
