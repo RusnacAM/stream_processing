@@ -18,19 +18,18 @@ defmodule Mediator do
 
   def handle_cast({:redirect_text, tweet_data}, {total_printers, current_printer}) do
     curr_printer_num = current_printer + 1
-    tweet_text = tweet_data["text"]
 
-    call_redacted(curr_printer_num, tweet_text)
+    call_redacted(curr_printer_num, tweet_data)
     call_engagement(curr_printer_num, tweet_data)
-    call_sentiment(curr_printer_num, tweet_text)
+    call_sentiment(curr_printer_num, tweet_data)
     {:noreply, {total_printers, rem(curr_printer_num, total_printers)}}
   end
 
-  def call_redacted(curr_printer_num, tweet_text) do
+  def call_redacted(curr_printer_num, tweet_data) do
     redacted_printer = String.to_atom("RedactedText#{curr_printer_num}")
     redacted_sup_pid = ReaderSupervisor.get_pid(:redactedprinters)
     redacted_printer_pid = PrinterSupervisor.get_pid(curr_printer_num, redacted_sup_pid)
-    RedactedText.censor_tweet(redacted_printer_pid, tweet_text)
+    RedactedText.censor_tweet(redacted_printer_pid, tweet_data)
   end
 
   def call_engagement(curr_printer_num, tweet_data) do
@@ -40,11 +39,11 @@ defmodule Mediator do
     EngagementRatio.get_engagement(engagement_printer_pid, tweet_data)
   end
 
-  def call_sentiment(curr_printer_num, tweet_text) do
+  def call_sentiment(curr_printer_num, tweet_data) do
     sentiment_printer = String.to_atom("SentimentScore#{curr_printer_num}")
     sentiment_sup_pid = ReaderSupervisor.get_pid(:sentimentprinters)
     sentiment_printer_pid = PrinterSupervisor.get_pid(curr_printer_num, sentiment_sup_pid)
-    SentimentScore.get_sentiment(sentiment_printer_pid, tweet_text)
+    SentimentScore.get_sentiment(sentiment_printer_pid, tweet_data)
   end
 
 end

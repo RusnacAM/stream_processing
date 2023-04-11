@@ -8,23 +8,23 @@ defmodule Batcher do
   end
 
   def init({batch_size, batch_timeout}) do
-    Process.send_after(self(), :print_batch_timeout, batch_timeout)
-    {:ok, %{batch_size: batch_size, batch_timeout: batch_timeout, tweets: []}}
+    {:ok, %{batch_size: batch_size, batch_timeout: batch_timeout, tweets: [], prev_print: System.system_time(:millisecond)}}
   end
 
   def handle_info(:print_batch_timeout, state) do
-    IO.puts("BATCH TIMEOUT:\n")
-    Enum.map(state[:tweets], fn tweet -> IO.puts("Tweet Text: #{inspect(tweet)}") end)
-    IO.puts("\n")
-    Process.send_after(self(), :print_batch_timeout, state[:batch_timeout])
-    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: []}}
+    IO.puts("--------BATCH TIMEOUT--------\n")
+    for {data1, data2, data3} <- state[:tweets] do
+      IO.puts("#{data1}\n#{data2}\n#{data3}\n")
+    end
+    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: [], prev_print: System.system_time(:millisecond)}}
   end
 
   def handle_info(:print_batch, state) do
-    IO.puts("BATCH:\n")
-    Enum.map(state[:tweets], fn tweet -> IO.puts("Tweet Text: #{inspect(tweet)}") end)
-    IO.puts("\n")
-    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: []}}
+    IO.puts("--------BATCH--------\n")
+    for {data1, data2, data3} <- state[:tweets] do
+      IO.puts("#{data1}\n#{data2}\n#{data3}\n")
+    end
+    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: [], prev_print: System.system_time(:millisecond)}}
   end
 
   def get_batch(tweet) do
@@ -33,13 +33,19 @@ defmodule Batcher do
 
   def handle_cast({:get_batch, tweet}, state) do
     new_state = [tweet| state[:tweets]]
+    prev_time = state[:prev_print]
+    curr_time = System.system_time(:millisecond)
+    elapsed_time = curr_time - prev_time
     if length(new_state) >= state[:batch_size] do
       send(self(), :print_batch)
+    else
+      if elapsed_time >= state[:batch_timeout] do
+        send(self(), :print_batch_timeout)
+      end
     end
-    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: new_state}}
+    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: new_state, prev_print: state[:prev_print]}}
   end
 end
 
 # {:ok, pid} = ReaderSupervisor.start_link
 # {:ok, pid} = Batcher.start_link({10, 1000})
-# send(Batcher, {:get_batch, "hashtag_list"})

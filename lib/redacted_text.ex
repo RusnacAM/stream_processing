@@ -13,11 +13,13 @@ defmodule RedactedText do
     {:ok, swear_words}
   end
 
-  def censor_tweet(pid, tweet_text) do
-    GenServer.cast(pid, {:censor_tweet, tweet_text})
+  def censor_tweet(pid, tweet_data) do
+    GenServer.cast(pid, {:censor_tweet, tweet_data})
   end
 
-  def handle_cast({:censor_tweet, tweet_text}, state) do
+  def handle_cast({:censor_tweet, tweet_data}, state) do
+    tweet_id = tweet_data["id"]
+    tweet_text = tweet_data["text"]
     tweet_text = Regex.replace(~r/(\w+)/, tweet_text, fn word ->
       if Enum.member?(state, word) do
         String.replace(word, ~r/./, "*")
@@ -25,8 +27,9 @@ defmodule RedactedText do
         word
       end
     end)
-    Batcher.get_batch(tweet_text)
+    # Batcher.get_batch(tweet_text)
     #IO.puts("Redacted text: #{inspect(tweet_text)}")
+    Aggregator.get_tweet_data({tweet_id, "Tweet Text: #{tweet_text}"})
     {:noreply, state}
   end
 

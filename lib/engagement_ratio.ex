@@ -16,6 +16,7 @@ defmodule EngagementRatio do
   end
 
   def handle_cast({:get_engagement, tweet_data}, state) do
+    tweet_id = tweet_data["id"]
     username = tweet_data["user"]["name"]
     favourites = if tweet_data["retweeted_status"]["favorite_count"] == nil do
       tweet_data["favorite_count"]
@@ -39,6 +40,8 @@ defmodule EngagementRatio do
 
     #IO.puts("Engagement Ratio: #{inspect(engagement_ratio)}")
     UserEngagement.get_user_engagement(username, engagement_ratio)
+
+    Aggregator.get_tweet_data({tweet_id, "Engagement Ratio: #{engagement_ratio}"})
     {:noreply, state}
   end
 
