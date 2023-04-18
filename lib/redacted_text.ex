@@ -28,7 +28,7 @@ defmodule RedactedText do
       end
     end)
     # Batcher.get_batch(tweet_text)
-    #IO.puts("Redacted text: #{inspect(tweet_text)}")
+    # IO.puts("Redacted text: #{inspect(tweet_text)}")
     Aggregator.get_tweet_data({tweet_id, "Tweet Text: #{tweet_text}"})
     {:noreply, state}
   end

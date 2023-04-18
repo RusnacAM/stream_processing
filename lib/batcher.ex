@@ -11,36 +11,29 @@ defmodule Batcher do
     {:ok, %{batch_size: batch_size, batch_timeout: batch_timeout, tweets: [], prev_print: System.system_time(:millisecond)}}
   end
 
-  def handle_info(:print_batch_timeout, state) do
-    IO.puts("--------BATCH TIMEOUT--------\n")
-    for {data1, data2, data3} <- state[:tweets] do
-      IO.puts("#{data1}\n#{data2}\n#{data3}\n")
+  def handle_info(:send_batch, state) do
+    for {id, {tweet, {user, engagement}, sentiment}} <- state[:tweets] do
+      # IO.puts("#{id}\n#{user}\n#{tweet}\n#{engagement}\n#{sentiment}\n")
+      Database.insert_tweet(id, tweet, engagement, sentiment)
+      Database.insert_user(id, user)
     end
     {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: [], prev_print: System.system_time(:millisecond)}}
   end
 
-  def handle_info(:print_batch, state) do
-    IO.puts("--------BATCH--------\n")
-    for {data1, data2, data3} <- state[:tweets] do
-      IO.puts("#{data1}\n#{data2}\n#{data3}\n")
-    end
-    {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: [], prev_print: System.system_time(:millisecond)}}
+  def get_batch(tweet_data) do
+    GenServer.cast(__MODULE__, {:get_batch, tweet_data})
   end
 
-  def get_batch(tweet) do
-    GenServer.cast(__MODULE__, {:get_batch, tweet})
-  end
-
-  def handle_cast({:get_batch, tweet}, state) do
-    new_state = [tweet| state[:tweets]]
+  def handle_cast({:get_batch, tweet_data}, state) do
+    new_state = [tweet_data| state[:tweets]]
     prev_time = state[:prev_print]
     curr_time = System.system_time(:millisecond)
     elapsed_time = curr_time - prev_time
     if length(new_state) >= state[:batch_size] do
-      send(self(), :print_batch)
+      send(self(), :send_batch)
     else
       if elapsed_time >= state[:batch_timeout] do
-        send(self(), :print_batch_timeout)
+        send(self(), :send_batch)
       end
     end
     {:noreply, %{batch_size: state[:batch_size], batch_timeout: state[:batch_timeout], tweets: new_state, prev_print: state[:prev_print]}}

@@ -38,10 +38,10 @@ defmodule EngagementRatio do
       0
     end
 
-    #IO.puts("Engagement Ratio: #{inspect(engagement_ratio)}")
+    # IO.puts("Engagement Ratio: #{inspect(engagement_ratio)}")
     UserEngagement.get_user_engagement(username, engagement_ratio)
 
-    Aggregator.get_tweet_data({tweet_id, "Engagement Ratio: #{engagement_ratio}"})
+    Aggregator.get_tweet_data({tweet_id, {username, "Engagement Ratio: #{engagement_ratio}"}})
     {:noreply, state}
   end
 

@@ -19,7 +19,8 @@ defmodule Aggregator do
     |> Tuple.append(data)
 
     if tuple_size(tweet_data) == 3 do
-      Batcher.get_batch(tweet_data)
+      data_to_send = {id, tweet_data}
+      Batcher.get_batch(data_to_send)
       {:noreply, Map.delete(state, id)}
     else
       {:noreply, Map.put(state, id, tweet_data)}

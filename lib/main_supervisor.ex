@@ -12,10 +12,11 @@ defmodule ReaderSupervisor do
       Supervisor.child_spec({PrinterSupervisor, {3, SentimentScore}}, id: :sentimentprinters),
       Supervisor.child_spec({UserEngagement, []}, id: :userengagement),
       Supervisor.child_spec({Aggregator, []}, id: :aggregator),
-      # Supervisor.child_spec({HashtagPrinter}, id: :hashtagprinter),
+      Supervisor.child_spec({HashtagPrinter, []}, id: :hashtagprinter),
       Supervisor.child_spec({EmotionReader, ["http://localhost:4000/emotion_values"]}, id: :emotionvalues),
       Supervisor.child_spec({Mediator, 3}, id: :loadbalancer),
       Supervisor.child_spec({Batcher, {150, 1500}}, id: :batcher),
+      Supervisor.child_spec({Database, []}, id: :localdb),
       Supervisor.child_spec({SseReader, ["http://localhost:4000/tweets/1"]}, id: :tweets1),
       Supervisor.child_spec({SseReader, ["http://localhost:4000/tweets/2"]}, id: :tweets2)
     ]

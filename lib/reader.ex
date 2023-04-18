@@ -37,11 +37,11 @@ defmodule SseReader do
     if success == :ok do
       tweet_data = data["message"]["tweet"]
       Mediator.redirect_text(tweet_data)
-      # hashtags = data["message"]["tweet"]["entities"]["hashtags"]
-      # hashtag_list = Enum.map(hashtags, fn hashtag -> Map.get(hashtag, "text") end)
-      # redirect_hashtag(hashtag_list)
+      hashtags = data["message"]["tweet"]["entities"]["hashtags"]
+      hashtag_list = Enum.map(hashtags, fn hashtag -> Map.get(hashtag, "text") end)
+      redirect_hashtag(hashtag_list)
     end
-    #IO.puts("\n")
+    # IO.puts("\n")
 
   end
 
