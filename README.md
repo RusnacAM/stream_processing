@@ -1,4 +1,4 @@
-# Lab2
+# Tweets stream processing service in Elixir
 
 **TODO: Add description**
 
